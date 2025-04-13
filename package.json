@@ -18,7 +18,6 @@
     "license:add": "license-check-and-add add",
     "license:check": "license-check-and-add check",
     "lint": "eslint --ext .ts src",
-    "prepare": "husky install",
     "release": "release-it",
     "start": "node ./dist/server.js",
     "swagger:copy-assets": "shx cp -R ./node_modules/swagger-ui-dist ./swagger-docs",
