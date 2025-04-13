@@ -1,19 +1,3 @@
-/*
- * Copyright 2021 WPPConnect Team
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import { defaultLogger } from '@wppconnect-team/wppconnect';
 import cors from 'cors';
 import express, { Express, NextFunction, Router } from 'express';
@@ -35,8 +19,6 @@ import {
   startAllSessions,
 } from './util/functions';
 import { createLogger } from './util/logger';
-
-//require('dotenv').config();
 
 export const logger = createLogger(config.log);
 
@@ -70,7 +52,16 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
     process.env['AWS_SECRET_ACCESS_KEY'] = config.aws_s3.secret_key;
   }
 
-  // Add request options
+  const http = createServer(app);
+
+  // ✅ Aqui movemos o io antes do middleware
+  const io = new Socket(http, {
+    cors: {
+      origin: '*',
+    },
+  });
+
+  // Middleware que injeta opções no request
   app.use((req: any, res: any, next: NextFunction) => {
     req.serverOptions = serverOptions;
     req.logger = logger;
@@ -101,14 +92,6 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
   app.use(routes);
 
   createFolders();
-  const http = createServer(app);
-const io = new Socket(http, {
-  cors: {
-    origin: '*',
-  },
-});
-
-req.io = io as any;
 
   io.on('connection', (sock) => {
     logger.info(`ID: ${sock.id} entrou`);
@@ -118,7 +101,7 @@ req.io = io as any;
     });
   });
 
-  http.listen(PORT, () => {
+  http.listen(PORT, '0.0.0.0', () => {
     logger.info(`Server is running on port: ${PORT}`);
     logger.info(
       `\x1b[31m Visit ${serverOptions.host}:${PORT}/api-docs for Swagger docs`
@@ -133,8 +116,7 @@ req.io = io as any;
 Attention:
 Your configuration is configured to show only a few logs, before opening an issue, 
 please set the log to 'silly', copy the log that shows the error and open your issue.
-======================================================
-`);
+======================================================`);
   }
 
   return {
