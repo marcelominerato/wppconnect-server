@@ -102,11 +102,13 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
 
   createFolders();
   const http = createServer(app);
-  const io = new Socket(http, {
-    cors: {
-      origin: '*',
-    },
-  });
+const io = new Socket(http, {
+  cors: {
+    origin: '*',
+  },
+});
+
+req.io = io as any;
 
   io.on('connection', (sock) => {
     logger.info(`ID: ${sock.id} entrou`);
